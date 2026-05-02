@@ -1,0 +1,114 @@
+\documentclass{beamer}
+\usetheme{Madrid}
+\usecolortheme{default}
+
+\title[AUV Trajectory Tracking]{Replication and Evaluation: AUV Control Strategies}
+\subtitle{Double-Loop PID-Type Neural Network Sliding Mode Control}
+\author{Student Name}
+\institute{Department of Marine Engineering}
+\date{\today}
+
+\begin{document}
+
+\begin{frame}
+    \titlepage
+\end{frame}
+
+\begin{frame}{Project Overview \& Scope}
+    \textbf{Objective:} Replicate results from \textit{Mathematics 2022, 10, 3332}.
+    \vspace{0.5cm}
+    \begin{itemize}
+        \item Develop a robust 4-DOF mathematical hydrodynamic AUV model.
+        \item Implement control strategies from scratch:
+        \begin{itemize}
+            \item RBFPDSMC (Single-loop PD Sliding Mode Control)
+            \item RBFPIDSMC (Single-loop PID Sliding Mode Control)
+            \item DLNNSMC (Double-Loop Neural Network SMC)
+        \end{itemize}
+        \item Evaluate trajectory tracking accuracy under realistic environmental noise and parametric uncertainties.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Mathematical Modeling}
+    \textbf{4-DOF Non-linear Equations of Motion:}
+    \begin{block}{Kinematics and Dynamics}
+        \begin{equation}
+            \dot{\eta} = R(\psi) v
+        \end{equation}
+        \begin{equation}
+            M \dot{v} + C(v)v + D(v)v = \tau + \tau_{dist}
+        \end{equation}
+    \end{block}
+    \vspace{0.3cm}
+    \begin{itemize}
+        \item $\eta = [x, y, z, \psi]^T$: Earth-fixed positions
+        \item $v = [u, v_s, w, r]^T$: Body-fixed velocities
+        \item $M, C(v), D(v)$: Inertia, Coriolis, and Hydrodynamic Damping
+        \item $\tau_{dist}$: Unknown environmental disturbances
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Proposed Control Strategy: DLNNSMC}
+    \begin{block}{Double-Loop Architecture}
+        \textbf{Outer Loop (Kinematic):}
+        $v_d = R^{-1}(\psi) \left( \dot{\eta}_d + K_{p} e_\eta + K_{i} \int e_\eta dt \right)$ \\
+        \vspace{0.2cm}
+        \textbf{Inner Loop (Dynamic):}
+        $s = e_v + C_{in} \int e_v dt$
+    \end{block}
+    \vspace{0.3cm}
+    \begin{itemize}
+        \item \textbf{Sliding Mode Control (SMC):} Provides strong robustness. We utilize a $\tanh(s)$ boundary layer to practically eliminate chattering.
+        \item \textbf{RBF Neural Network:} Dynamically learns the unmodeled hydrodynamics and disturbances via the adaptation law $\dot{\hat{W}} = \Gamma h(v) s^T$.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Simulation Realism: Noise \& Uncertainty}
+    To rigorously test robustness, we avoided "perfect simulation" pitfalls:
+    \begin{itemize}
+        \item \textbf{Model Mismatch:} Controllers operate with 15\% parameter error ($\hat{M} = 0.85 M$).
+        \item \textbf{Sensor Noise:} Gaussian noise injected into position and velocity feedback to mimic real IMU/DVL sensors.
+        \item \textbf{Ocean Currents:} Low-frequency harmonic wave drift applied continuously.
+        \item \textbf{Actuator Saturation:} Torques clamped to realistic physical bounds.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Results: 3D Trajectory Tracking}
+    \begin{figure}
+        \centering
+        \includegraphics[height=0.7\textheight]{results/exp1_3d_trajectory.png}
+        \caption{Helix Trajectory Tracking (DLNNSMC vs Baselines)}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{Results: Error Convergence}
+    \begin{figure}
+        \centering
+        \includegraphics[height=0.7\textheight]{results/exp1_position_errors.png}
+        \caption{Position Tracking Errors tightly bounded within $\pm 0.5$m}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{Animated 3D Trajectory Verification}
+    \begin{center}
+        \textbf{Demonstration of Real-Time Convergence} \\
+        \vspace{0.5cm}
+        \textit{(Note: Native PDF readers do not support raw GIF playback.)} \\
+        \vspace{0.5cm}
+        Please refer to the external file: \\
+        \texttt{\textbf{results/exp1\_combined\_trajectory.gif}} \\
+        to view the dynamic tracking performance of the DLNNSMC successfully overpowering environmental drift.
+    \end{center}
+\end{frame}
+
+\begin{frame}{Conclusion}
+    \begin{block}{Summary}
+        The replication of the framework was successful. Implementing the DLNNSMC confirmed the claims of the reference paper, demonstrating that hybridizing adaptive neural networks with double-loop sliding mode control significantly outperforms single-loop baselines under realistic parametric uncertainties and sensor noise.
+    \end{block}
+    \vspace{0.5cm}
+    \begin{center}
+        \textit{Thank you! Questions?}
+    \end{center}
+\end{frame}
+
+\end{document}
